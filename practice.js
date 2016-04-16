@@ -2,6 +2,10 @@
 var Widget = function () {
 
 //-- PROPERTIES -------------------------->>>
+	this.$header = $("header")
+	this.$wrapper = $("#wrapper")
+	this.$content = $("#wrapper")
+	this.$footer = $("footer")
 //---------------------------------------->>>
 
 //-- METHODS ----------------------------->>>
