@@ -21,12 +21,12 @@ var Widget = function () {
 	}
 	this.emitNewEvent = function () {
 		// call an event emitter
-		that.trigger()
+		that.newEvent()
 	}
 	//------------------------------------|
 	
 	//-- EVENT EMITTERS ------------------|
-	this.trigger = function () {
+	this.newEvent = function () {
 		that.$content.trigger("newEvent");
 	}
 	//------------------------------------|
