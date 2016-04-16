@@ -12,6 +12,7 @@ html, body {
 	height: 100%;
 	width: 100%;
 	overflow: hidden;
+	margin-top: 5em;
 }
 
 header {
@@ -20,6 +21,7 @@ header {
 	position: fixed;
 	top: 0;
 	float: left;
+	background: rgba(255, 255, 0, 0.5); /*temporary*/
 }
 header nav {
 	height: 100%;
@@ -27,14 +29,23 @@ header nav {
 
 main {
     height: 100%;
-	margin-top: 5em;
-	padding-bottom: 5em;
 	background: rgba(0, 0, 255, 0.5); /*temporary*/
+}
+
+main aside {
+	height: 100%;
+	width: 30%;
+	float: left;
+    margin-bottom: 5em;
+	background: rgba(0, 255, 155, 0.3); /*temporary*/
 }
 
 #content {
     height: 100%;
+    width: 69%;
     margin-bottom: 5em;
+    float: right;
+	background: rgba(0, 155, 255, 0.3); /*temporary*/
 }
 #content section {
 	height: 100%;
