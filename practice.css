@@ -4,12 +4,46 @@
 	border: 1px dotted blue;
 }
 
+html, body {
+  	height: 100%;
+}
+
+#wrapper {
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+}
+
+header {
+	height: 5em;
+	width: 100%;
+	position: fixed;
+	top: 0;
+	float: left;
+}
 header nav {
-	margin: 0 auto;
+	height: 100%;
+}
+
+main {
+    height: 100%;
+	margin-top: 5em;
+	padding-bottom: 5em;
+	background: rgba(0, 0, 255, 0.5); /*temporary*/
+}
+
+#content {
+    height: 100%;
+    margin-bottom: 5em;
+}
+#content section {
+	height: 100%;
 }
 
 footer {
-	position: absolute;
-	bottom: 0;
 	width: 100%;
+	height: 5em;
+	background: rgba(255, 0, 0, 0.5); /*temporary*/
+	bottom: 0;
+	float: left;
 }
