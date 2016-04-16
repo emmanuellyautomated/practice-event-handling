@@ -7,3 +7,9 @@
 header nav {
 	margin: 0 auto;
 }
+
+footer {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+}
