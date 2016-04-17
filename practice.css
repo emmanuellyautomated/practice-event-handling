@@ -1,7 +1,7 @@
 * {
 	margin: 0;
 	padding: 0;
-	border: 1px dotted blue;
+	/*border: 1px dotted blue;*/
 }
 
 html, body {
@@ -34,15 +34,16 @@ main {
 
 main aside {
 	height: 100%;
-	width: 30%;
+	width: 29.8%;
 	float: left;
     margin-bottom: 5em;
 	background: rgba(0, 255, 155, 0.3); /*temporary*/
+	text-align: right;
 }
 
 #content {
     height: 100%;
-    width: 69%;
+    width: 69.3%;
     margin-bottom: 5em;
     float: right;
 	background: rgba(0, 155, 255, 0.3); /*temporary*/
