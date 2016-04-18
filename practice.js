@@ -56,7 +56,13 @@ var Widget = function () {
 			that.toggleDataBoolean(delegates[i], "isShifted")
 		}
 	}
-	
+	this.changeColor = function (e) {
+		var delegates = e.data.delegates
+
+		for (var i=0; i < delegates.length; i++) {
+			delegates[i].css('background-color', 'rgba(255, 165, 0, 1)')
+		}
+	}
 	//------------------------------------|
 	
 	//-- EVENTS DELEGATORS ---------------|
@@ -86,7 +92,7 @@ var Widget = function () {
 		delegates: [that.$content]
 	}, that.shiftElements)
 	this.$footer.on("click", {
-		delegates: [that.$footer]
+		delegates: [that.$footer, this.$header]
 	}, that.shiftElements)
 	//--> UX | respond to software-generated events
 	this.$aside.on("shiftElements", {
