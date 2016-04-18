@@ -43,6 +43,20 @@ var Widget = function () {
 			that.toggleDataBoolean(delegates[i], "isShifted")
 		}
 	}
+	this.openCurtain = function (e) { 
+		var percent = e.data.percent
+		var delegates = e.data.delegates
+		
+		for (var i=0; i < delegates.length; i++) {
+			if (delegates[i].data("isShifted")) {
+				reset(delegates[i])
+			} else {
+				openClose(delegates[i], percent)
+			} 
+			that.toggleDataBoolean(delegates[i], "isShifted")
+		}
+	}
+	
 	//------------------------------------|
 	
 	//-- EVENTS DELEGATORS ---------------|
@@ -71,6 +85,9 @@ var Widget = function () {
 	this.$content.on("click", {
 		delegates: [that.$content]
 	}, that.shiftElements)
+	this.$footer.on("click", {
+		delegates: [that.$footer]
+	}, that.shiftElements)
 	//--> UX | respond to software-generated events
 	this.$aside.on("shiftElements", {
 		percent: 200,
@@ -80,6 +97,10 @@ var Widget = function () {
 		percent: 200,
 		delegates: [this.$aside, this.$content]
 	}, that.tandemSlide)
+	this.$footer.on("shiftElements", {
+		percent: 200,
+		delegates: [this.$aside, this.$content]
+	}, that.openCurtain)
 	this.$header.on("shiftElements", {
 		delegates: [this.$header]
 	}, that.changeColor)
@@ -99,6 +120,17 @@ var Widget = function () {
 		} else {
 			delegate.animate({
 		    	width: delegate.data("width") + percent
+		  	}, 500)
+		}
+	}
+	function openClose(delegate, percent) {
+		if (delegate.data("shouldRetract")) {
+			delegate.animate({
+		    	width: delegate.data("width") - percent
+		  	}, 500)
+		} else {
+			delegate.animate({
+		    	width: delegate.data("width") - percent
 		  	}, 500)
 		}
 	}
