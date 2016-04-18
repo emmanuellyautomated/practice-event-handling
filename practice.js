@@ -15,6 +15,8 @@ var Widget = function () {
 	this.$content.data("isShifted", false)
 	this.$content.data("shouldRetract", true)
 	this.$content.data("width", this.$content[0].offsetWidth)
+	this.$header.data("color", this.$header.css('background-color'))
+	this.$header.data("hasColorChanged", false)
 	//------------------------------------|
 
 	var that = this;
@@ -60,7 +62,12 @@ var Widget = function () {
 		var delegates = e.data.delegates
 
 		for (var i=0; i < delegates.length; i++) {
-			delegates[i].css('background-color', 'rgba(255, 165, 0, 1)')
+			if (delegates[i].data("hasColorChanged")) {
+				resetColor(delegates[i])
+			} else {
+				delegates[i].css('background-color', 'rgba(255, 165, 0, 1)')
+			}
+			that.toggleDataBoolean(delegates[i], "hasColorChanged")
 		}
 	}
 	//------------------------------------|
@@ -104,7 +111,7 @@ var Widget = function () {
 		delegates: [this.$aside, this.$content]
 	}, that.tandemSlide)
 	this.$footer.on("shiftElements", {
-		percent: 200,
+		percent: 500,
 		delegates: [this.$aside, this.$content]
 	}, that.openCurtain)
 	this.$header.on("shiftElements", {
@@ -117,6 +124,9 @@ var Widget = function () {
 		delegate.animate({
 	    	width: delegate.data("width")
 	  	}, 500)
+	}
+	function resetColor(delegate) {
+		delegate.css("background-color", delegate.data("color"))
 	}
 	function shift(delegate, percent) {
 		if (delegate.data("shouldRetract")) {
