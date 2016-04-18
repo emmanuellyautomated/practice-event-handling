@@ -59,13 +59,14 @@ var Widget = function () {
 		}
 	}
 	this.changeColor = function (e) {
+		var color = e.data.color
 		var delegates = e.data.delegates
 
 		for (var i=0; i < delegates.length; i++) {
 			if (delegates[i].data("hasColorChanged")) {
 				resetColor(delegates[i])
 			} else {
-				delegates[i].css('background-color', 'rgba(255, 165, 0, 1)')
+				delegates[i].css('background-color', color)
 			}
 			that.toggleDataBoolean(delegates[i], "hasColorChanged")
 		}
@@ -92,11 +93,11 @@ var Widget = function () {
 	this.$content.on("click", {
 		delegates: [that.$wrapper, that.$header]
 	}, that.newEvent)
+				 .on("click", {
+		delegates: [that.$content]
+	}, that.shiftElements)
 	this.$aside.on("click", {
 		delegates: [that.$aside]
-	}, that.shiftElements)
-	this.$content.on("click", {
-		delegates: [that.$content]
 	}, that.shiftElements)
 	this.$footer.on("click", {
 		delegates: [that.$footer, this.$header]
@@ -115,6 +116,7 @@ var Widget = function () {
 		delegates: [this.$aside, this.$content]
 	}, that.openCurtain)
 	this.$header.on("shiftElements", {
+		color: 'rgba(255, 165, 0, 1)',
 		delegates: [this.$header]
 	}, that.changeColor)
 	//------------------------------------|
