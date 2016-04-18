@@ -30,32 +30,15 @@ var Widget = function () {
 	this.toggleDataBoolean = function (element, attrName) {
 		element.data(attrName) ? element.data(attrName, false) : element.data(attrName, true)
 	} 
-	this.changeElementWidth = function (e) { 
+	this.tandemSlide = function (e) { 
 		var percent = e.data.percent
 		var delegates = e.data.delegates
-
-		function reset(delegate) {
-			delegate.animate({
-		    	width: delegate.data("width")
-		  	}, 500)
-		}
-		function shift(delegate) {
-			if (delegates[i].data("shouldRetract")) {
-				delegate.animate({
-			    	width: delegate.data("width") - percent
-			  	}, 500)
-			} else {
-				delegate.animate({
-			    	width: delegate.data("width") + percent
-			  	}, 500)
-			}
-		}
 		
 		for (var i=0; i < delegates.length; i++) {
 			if (delegates[i].data("isShifted")) {
 				reset(delegates[i])
 			} else {
-				shift(delegates[i])
+				shift(delegates[i], percent)
 			} 
 			that.toggleDataBoolean(delegates[i], "isShifted")
 		}
@@ -79,21 +62,46 @@ var Widget = function () {
 
 	//-- EVENT HANDLERS ------------------|
 	//--> UI | respond to user hardware events
-	this.$header.on("click", that.alerter)
-	this.$footer.on("click", that.log)
 	this.$content.on("click", {
 		delegates: [that.$wrapper, that.$header]
 	}, that.newEvent)
 	this.$aside.on("click", {
 		delegates: [that.$aside]
 	}, that.shiftElements)
+	this.$content.on("click", {
+		delegates: [that.$content]
+	}, that.shiftElements)
 	//--> UX | respond to software-generated events
-	this.$wrapper.on("newEvent", that.log)
-	this.$header.on("newEvent", that.log)
 	this.$aside.on("shiftElements", {
 		percent: 200,
 		delegates: [this.$aside, this.$content]
-	}, that.changeElementWidth)
+	}, that.tandemSlide)
+	this.$content.on("shiftElements", {
+		percent: 200,
+		delegates: [this.$aside, this.$content]
+	}, that.tandemSlide)
+	this.$header.on("shiftElements", {
+		delegates: [this.$header]
+	}, that.changeColor)
+	//------------------------------------|
+
+	//-- ANIMATION METHODS ---------------|
+	function reset(delegate) {
+		delegate.animate({
+	    	width: delegate.data("width")
+	  	}, 500)
+	}
+	function shift(delegate, percent) {
+		if (delegate.data("shouldRetract")) {
+			delegate.animate({
+		    	width: delegate.data("width") - percent
+		  	}, 500)
+		} else {
+			delegate.animate({
+		    	width: delegate.data("width") + percent
+		  	}, 500)
+		}
+	}
 	//------------------------------------|
 } 
 //-------------------------------------------->>>
