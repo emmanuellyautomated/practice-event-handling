@@ -130,15 +130,9 @@ var Widget = function () {
 		}
 	}
 	function openClose(delegate, percent) {
-		if (delegate.data("shouldRetract")) {
-			delegate.animate({
-		    	width: delegate.data("width") - percent
-		  	}, 500)
-		} else {
-			delegate.animate({
-		    	width: delegate.data("width") - percent
-		  	}, 500)
-		}
+		delegate.animate({
+	    	width: delegate.data("width") - percent
+	  	}, 500)
 	}
 	//------------------------------------|
 } 
