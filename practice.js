@@ -25,12 +25,10 @@ var Widget = function () {
 	//-- METHODS -------------------------|
 	function getInitialState() {
 		var props = Object.keys(that)
-		var initData = []
+		var initData = {}
 		for (var i=0; i<props.length; i++) {
 			if (props[i].indexOf("$") !== -1 && typeof that[props[i]] === "object") {
-				var clone = that[props[i]].clone(true) // deep clone
-				clone.data()["name"] = props[i]
-				initData.push(clone.data())
+				initData[props[i]] = that[props[i]].clone(true).data() // deep clone
 			}
 		} 
 		return initData
@@ -133,6 +131,10 @@ var Widget = function () {
 
 	//-- ANIMATION METHODS ---------------|
 	function reset(delegate) {
+		// delegate.data() = that.initialState()["$" + delegate["selector"]]
+		// console.log("NOT_RESET: ", delegate.data())
+		replaceObjectValues(delegate.data(), that.initialState["$" + delegate["selector"]])
+		// console.log("RESET: ", delegate.data())
 		delegate.animate({
 	    	width: delegate.data("width")
 	  	}, 500)
@@ -157,6 +159,17 @@ var Widget = function () {
 	  	}, 500)
 	}
 	//------------------------------------|
+	function replaceObjectValues(obj1, obj2) {
+		console.log("NOT_RESET: ", obj1)
+
+		obj2Keys = Object.keys(obj2)
+		for (var i=0; i<obj2Keys.length; i++) {
+			if (Object.keys(obj1).indexOf(obj2Keys[i]) !== -1) {
+				obj1[obj2Keys[i]] = obj2[obj2Keys[i]]
+			}
+		}
+		console.log("RESET: ", obj1)
+	}
 } 
 //-------------------------------------------->>>
 
