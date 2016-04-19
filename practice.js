@@ -1,6 +1,8 @@
 //-- CONSTRUCTOR ----------------------------->>>
 var Widget = function () {
 
+	var that = this;
+
 	//-- PROPERTIES ----------------------|
 	//--> elements can have data attrs that change on event
 	this.$header = $("header")
@@ -17,11 +19,22 @@ var Widget = function () {
 	this.$content.data("width", this.$content[0].offsetWidth)
 	this.$header.data("color", this.$header.css('background-color'))
 	this.$header.data("hasColorChanged", false)
+	this.initialState = getInitialState()
 	//------------------------------------|
 
-	var that = this;
-
 	//-- METHODS -------------------------|
+	function getInitialState() {
+		var props = Object.keys(that)
+		var initData = []
+		for (var i=0; i<props.length; i++) {
+			if (props[i].indexOf("$") !== -1 && typeof that[props[i]] === "object") {
+				var clone = that[props[i]].clone(true) // deep clone
+				clone.data()["name"] = props[i]
+				initData.push(clone.data())
+			}
+		} 
+		return initData
+	}
 	this.log = function (anything) {
 		console.log(anything);
 	}
@@ -63,7 +76,7 @@ var Widget = function () {
 		var delegates = e.data.delegates
 
 		for (var i=0; i < delegates.length; i++) {
-			if (delegates[i].data("hasColorChanged")) {
+			if (delegates[i].data("hasColorChanged") && that.$aside.data("isShifted")) {
 				resetColor(delegates[i])
 			} else {
 				delegates[i].css('background-color', color)
@@ -91,16 +104,13 @@ var Widget = function () {
 	//-- EVENT HANDLERS ------------------|
 	//--> UI | respond to user hardware events
 	this.$content.on("click", {
-		delegates: [that.$wrapper, that.$header]
-	}, that.newEvent)
-				 .on("click", {
-		delegates: [that.$content]
+		delegates: [this.$content]
 	}, that.shiftElements)
 	this.$aside.on("click", {
-		delegates: [that.$aside]
+		delegates: [this.$aside]
 	}, that.shiftElements)
 	this.$footer.on("click", {
-		delegates: [that.$footer, this.$header]
+		delegates: [this.$footer, this.$header]
 	}, that.shiftElements)
 	//--> UX | respond to software-generated events
 	this.$aside.on("shiftElements", {
