@@ -11,14 +11,7 @@ var Widget = function () {
 	this.$footer = $("footer")
 	this.$aside = $("aside")
 	//--> SET DATA ATTRIBUTES 
-	this.$aside.data("isShifted", false)
-	this.$aside.data("movedLeft", false)
-	this.$aside.data("movedRight", false)
 	this.$aside.data("width", this.$aside[0].offsetWidth)
-	this.$content.data("isShifted", false)
-	this.$content.data("movedLeft", false)
-	this.$content.data("movedRight", false)
-	this.$content.data("shouldStartSlide", true)
 	this.$content.data("width", this.$content[0].offsetWidth)
 	this.$header.data("color", this.$header.css('background-color'))
 	this.$header.data("hasColorChanged", false)
@@ -44,9 +37,14 @@ var Widget = function () {
 		alert(message)
 	}
 	this.toggleDataBoolean = function (element, attrName) {
-		element.data(attrName) ? element.data(attrName, false) : element.data(attrName, true)
+		if (typeof element.data(attrName) === "boolean") {
+			element.data(attrName) ? element.data(attrName, false) : element.data(attrName, true)
+			return true
+		} else {
+			return false
+		}
 	} 
-	this.tandemSlide = function (e) { 
+	this.tandemSlide = function (e) { // reset elm positions in state `isShifted`; `shift` elm otherwise
 		var percent = e.data.percent
 		var delegates = e.data.delegates
 		
@@ -56,11 +54,9 @@ var Widget = function () {
 			} else {
 				shift(delegates[i], percent)
 			} 
-            console.log("DELEGATE_"+ i + ": " , delegates[i])
-            console.log("DATA_"+ i + ": " , delegates[i].data())
 		}
 	}
-	this.openCurtain = function (e) { 
+	this.openCurtain = function (e) { // reset elm positions in state `isshifted`; `openClose` elm otherwise
 		var percent = e.data.percent
 		var delegates = e.data.delegates
 		
@@ -81,7 +77,6 @@ var Widget = function () {
 				resetColor(delegates[i])
 			} else {
 				delegates[i].css('background-color', color)
-                that.toggleDataBoolean(delegates[i], "hasColorChanged")
 			}
 		}
 	}
@@ -105,33 +100,7 @@ var Widget = function () {
 	//-- EVENT HANDLERS ------------------|
     //
 	//--> UI | respond to user hardware events
-	this.$content.on("click", {
-		delegates: [this.$content]
-	}, that.shiftElements)
-	this.$aside.on("click", {
-		delegates: [this.$aside]
-	}, that.shiftElements)
-	this.$footer.on("click", {
-		delegates: [this.$footer, this.$header]
-	}, that.shiftElements)
-
 	//--> UX | respond to software-generated events
-	this.$aside.on("shiftElements", {
-		percent: 200,
-		delegates: [this.$aside, this.$content]
-	}, that.tandemSlide)
-	this.$content.on("shiftElements", {
-		percent: 200,
-		delegates: [this.$aside, this.$content]
-	}, that.tandemSlide)
-	this.$footer.on("shiftElements", {
-		percent: 500,
-		delegates: [this.$aside, this.$content]
-	}, that.openCurtain)
-	this.$header.on("shiftElements", {
-		color: 'rgba(255, 165, 0, 1)',
-		delegates: [this.$header]
-	}, that.changeColor)
 	//------------------------------------|
 
 	//-- ANIMATION METHODS ---------------|
