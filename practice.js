@@ -44,14 +44,23 @@ var Widget = function () {
 			return false
 		}
 	} 
+	this.hasDataAttributeChanged = function (element, attrName) {
+		if (element.data(attrName) === that.initialState["$" + element.selector][attrName]) {
+			return false 
+		} else {
+			return true
+		}
+	}
 	this.tandemSlide = function (e) { // reset elm positions in state `isShifted`; `shift` elm otherwise
 		var percent = e.data.percent
 		var delegates = e.data.delegates
 		
 		for (var i=0; i < delegates.length; i++) {
 			if (delegates[i].data("isShifted")) {
+				console.log(delegates[i].data())
 				reset(delegates[i])
 			} else {
+				console.log(delegates[i].data())
 				shift(delegates[i], percent)
 			} 
 		}
@@ -100,6 +109,9 @@ var Widget = function () {
 	//-- EVENT HANDLERS ------------------|
     //
 	//--> UI | respond to user hardware events
+	this.$aside.on("click", {
+		delegates: [this.$aside, this.$content]
+	}, that.tandemSlide)
 	//--> UX | respond to software-generated events
 	//------------------------------------|
 
