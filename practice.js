@@ -12,10 +12,13 @@ var Widget = function () {
 	this.$aside = $("aside")
 	//--> SET DATA ATTRIBUTES 
 	this.$aside.data("isShifted", false)
-	this.$aside.data("shouldRetract", false)
+	this.$aside.data("movedLeft", false)
+	this.$aside.data("movedRight", false)
 	this.$aside.data("width", this.$aside[0].offsetWidth)
 	this.$content.data("isShifted", false)
-	this.$content.data("shouldRetract", true)
+	this.$content.data("movedLeft", false)
+	this.$content.data("movedRight", false)
+	this.$content.data("shouldStartSlide", true)
 	this.$content.data("width", this.$content[0].offsetWidth)
 	this.$header.data("color", this.$header.css('background-color'))
 	this.$header.data("hasColorChanged", false)
@@ -53,7 +56,8 @@ var Widget = function () {
 			} else {
 				shift(delegates[i], percent)
 			} 
-			that.toggleDataBoolean(delegates[i], "isShifted")
+            console.log("DELEGATE_"+ i + ": " , delegates[i])
+            console.log("DATA_"+ i + ": " , delegates[i].data())
 		}
 	}
 	this.openCurtain = function (e) { 
@@ -66,7 +70,6 @@ var Widget = function () {
 			} else {
 				openClose(delegates[i], percent)
 			} 
-			that.toggleDataBoolean(delegates[i], "isShifted")
 		}
 	}
 	this.changeColor = function (e) {
@@ -78,8 +81,8 @@ var Widget = function () {
 				resetColor(delegates[i])
 			} else {
 				delegates[i].css('background-color', color)
+                that.toggleDataBoolean(delegates[i], "hasColorChanged")
 			}
-			that.toggleDataBoolean(delegates[i], "hasColorChanged")
 		}
 	}
 	//------------------------------------|
@@ -100,6 +103,7 @@ var Widget = function () {
 	//------------------------------------|
 
 	//-- EVENT HANDLERS ------------------|
+    //
 	//--> UI | respond to user hardware events
 	this.$content.on("click", {
 		delegates: [this.$content]
@@ -110,6 +114,7 @@ var Widget = function () {
 	this.$footer.on("click", {
 		delegates: [this.$footer, this.$header]
 	}, that.shiftElements)
+
 	//--> UX | respond to software-generated events
 	this.$aside.on("shiftElements", {
 		percent: 200,
@@ -131,19 +136,17 @@ var Widget = function () {
 
 	//-- ANIMATION METHODS ---------------|
 	function reset(delegate) {
-		// delegate.data() = that.initialState()["$" + delegate["selector"]]
-		// console.log("NOT_RESET: ", delegate.data())
-		replaceObjectValues(delegate.data(), that.initialState["$" + delegate["selector"]])
-		// console.log("RESET: ", delegate.data())
+		Object.assign(delegate.data(), that.initialState["$" + delegate["selector"]])
 		delegate.animate({
 	    	width: delegate.data("width")
 	  	}, 500)
+        that.toggleDataBoolean(delegate, "isShifted")
 	}
 	function resetColor(delegate) {
 		delegate.css("background-color", delegate.data("color"))
 	}
 	function shift(delegate, percent) {
-		if (delegate.data("shouldRetract")) {
+		if (delegate.data("shouldStartSlide")) {
 			delegate.animate({
 		    	width: delegate.data("width") - percent
 		  	}, 500)
@@ -152,6 +155,7 @@ var Widget = function () {
 		    	width: delegate.data("width") + percent
 		  	}, 500)
 		}
+        that.toggleDataBoolean(delegate, "isShifted")
 	}
 	function openClose(delegate, percent) {
 		delegate.animate({
@@ -159,17 +163,6 @@ var Widget = function () {
 	  	}, 500)
 	}
 	//------------------------------------|
-	function replaceObjectValues(obj1, obj2) {
-		console.log("NOT_RESET: ", obj1)
-
-		obj2Keys = Object.keys(obj2)
-		for (var i=0; i<obj2Keys.length; i++) {
-			if (Object.keys(obj1).indexOf(obj2Keys[i]) !== -1) {
-				obj1[obj2Keys[i]] = obj2[obj2Keys[i]]
-			}
-		}
-		console.log("RESET: ", obj1)
-	}
 } 
 //-------------------------------------------->>>
 
