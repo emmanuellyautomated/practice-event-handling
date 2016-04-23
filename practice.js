@@ -12,13 +12,106 @@ var Widget = function () {
 	this.$aside = $("aside")
 	//--> SET DATA ATTRIBUTES 
 	this.$aside.data("width", this.$aside[0].offsetWidth)
+	this.$aside.data("shouldAdvance", true)
 	this.$content.data("width", this.$content[0].offsetWidth)
-	this.$header.data("color", this.$header.css('background-color'))
-	this.$header.data("hasColorChanged", false)
+	this.$content.data("shouldAdvance", false)
+	// this.$header.data("color", this.$header.css('background-color'))
+	// this.$header.data("hasColorChanged", false)
 	this.initialState = getInitialState()
 	//------------------------------------|
 
 	//-- METHODS -------------------------|
+	this.tandemSlide = function (e) { 
+		var pixels = e.data.pixels
+		var delegates = e.data.delegates
+		var attrName = e.data.attrName
+		
+		for (var i=0; i < delegates.length; i++) {
+			if ( hasDataAttributeChanged(delegates[i], attrName) ) {
+				reset(delegates[i], attrName)
+			} else {
+				shift(delegates[i], pixels, attrName)
+			} 
+		}
+	}
+	// this.openCurtain = function (e) { 
+	// 	var pixels = e.data.pixels
+	// 	var delegates = e.data.delegates
+		
+	// 	for (var i=0; i < delegates.length; i++) {
+	// 		if (delegates[i].data("isShifted")) {
+	// 			reset(delegates[i])
+	// 		} else {
+	// 			openClose(delegates[i], pixels)
+	// 		} 
+	// 	}
+	// }
+	// this.changeColor = function (e) {
+	// 	var color = e.data.color
+	// 	var delegates = e.data.delegates
+
+	// 	for (var i=0; i < delegates.length; i++) {
+	// 		if (delegates[i].data("hasColorChanged") && that.$aside.data("isShifted")) {
+	// 			resetColor(delegates[i])
+	// 		} else {
+	// 			delegates[i].css('background-color', color)
+	// 		}
+	// 	}
+	// }
+	//------------------------------------|
+	
+	//-- EVENTS --------------------------|
+	this.shiftElements = function (e) {
+		var delegates = e.data.delegates
+		for (var i=0; i < delegates.length; i++) {
+			delegates[i].trigger("shiftElements")
+		}
+	}
+	//------------------------------------|
+
+	//-- EVENT HANDLERS ------------------|
+	//--> UI | respond to user hardware events
+	var tandem = [this.$aside, this.$content]
+	heraldOn("click", elements=tandem, delegates=tandem, that.shiftElements)
+	
+	//--> UX | respond to software-generated events
+	this.$aside.on("shiftElements", {
+		pixels: 200,
+		attrName: "width",
+		delegates: [this.$aside, this.$content]
+	}, that.tandemSlide)
+	//------------------------------------|
+
+	//-- PRIVATE ANIMATORS ---------------|
+	function reset(delegate, attrName) {
+		Object.assign(delegate.data(), that.initialState["$" + delegate["selector"].replace(/[#.]/g, "")])
+		var opts = {}
+		opts[attrName] = delegate.data(attrName)
+		delegate.animate(opts, 500)
+	  	delegate.data(attrName, opts[attrName])
+	}
+	// function resetColor(delegate) {
+	// 	delegate.css("background-color", delegate.data("color"))
+	// }
+	function shift(delegate, pixels, attrName) {
+		var opts = {}
+		if (delegate.data("shouldAdvance")) {
+			opts[attrName] = delegate.data(attrName) + pixels
+			delegate.animate(opts, 500)
+		  	delegate.data(attrName, opts[attrName])
+		} else {
+			opts[attrName] = delegate.data(attrName) - pixels
+			delegate.animate(opts, 500)
+		  	delegate.data(attrName, opts[attrName])
+		}
+	  	toggleDataBoolean(delegate, "shouldAdvance")
+	}
+	// function openClose(delegate, pixels) {
+	// 	delegate.animate({
+	//     	width: delegate.data("width") - pixels
+	//   	}, 500)
+	// }
+	//-- PRIVATE UTILITIES ---------------|
 	function getInitialState() {
 		var props = Object.keys(that)
 		var initData = {}
@@ -29,14 +122,14 @@ var Widget = function () {
 		} 
 		return initData
 	}
-	this.log = function (anything) {
-		console.log(anything);
+	function heraldOn(eventName, elements, delegates, callback) {
+		for (var i=0; i < elements.length; i++) {
+			elements[i].on(eventName, {
+				delegates: delegates				
+			}, callback)
+		}
 	}
-	this.alerter = function (anything) {
-		var message = "ALERT: a <" + anything.type + "> event was triggered."
-		alert(message)
-	}
-	this.toggleDataBoolean = function (element, attrName) {
+	function toggleDataBoolean(element, attrName) {
 		if (typeof element.data(attrName) === "boolean") {
 			element.data(attrName) ? element.data(attrName, false) : element.data(attrName, true)
 			return true
@@ -44,107 +137,52 @@ var Widget = function () {
 			return false
 		}
 	} 
-	this.hasDataAttributeChanged = function (element, attrName) {
-		if (element.data(attrName) === that.initialState["$" + element.selector][attrName]) {
+	function hasDataAttributeChanged(element, attrName) {
+		if (element.data(attrName) === that.initialState["$" + element.selector.replace(/[#.]/g, "")][attrName]) {
 			return false 
 		} else {
 			return true
 		}
-	}
-	this.tandemSlide = function (e) { // reset elm positions in state `isShifted`; `shift` elm otherwise
-		var percent = e.data.percent
-		var delegates = e.data.delegates
-		
-		for (var i=0; i < delegates.length; i++) {
-			if (delegates[i].data("isShifted")) {
-				console.log(delegates[i].data())
-				reset(delegates[i])
-			} else {
-				console.log(delegates[i].data())
-				shift(delegates[i], percent)
-			} 
-		}
-	}
-	this.openCurtain = function (e) { // reset elm positions in state `isshifted`; `openClose` elm otherwise
-		var percent = e.data.percent
-		var delegates = e.data.delegates
-		
-		for (var i=0; i < delegates.length; i++) {
-			if (delegates[i].data("isShifted")) {
-				reset(delegates[i])
-			} else {
-				openClose(delegates[i], percent)
-			} 
-		}
-	}
-	this.changeColor = function (e) {
-		var color = e.data.color
-		var delegates = e.data.delegates
-
-		for (var i=0; i < delegates.length; i++) {
-			if (delegates[i].data("hasColorChanged") && that.$aside.data("isShifted")) {
-				resetColor(delegates[i])
-			} else {
-				delegates[i].css('background-color', color)
-			}
-		}
-	}
-	//------------------------------------|
-	
-	//-- EVENTS DELEGATORS ---------------|
-	this.newEvent = function (e) {
-		var delegates = e.data.delegates
-		for (var i=0; i < delegates.length; i++) {
-			delegates[i].trigger("newEvent");
-		}
-	}
-	this.shiftElements = function (e) {
-		var delegates = e.data.delegates
-		for (var i=0; i < delegates.length; i++) {
-			delegates[i].trigger("shiftElements")
-		}
-	}
-	//------------------------------------|
-
-	//-- EVENT HANDLERS ------------------|
-    //
-	//--> UI | respond to user hardware events
-	this.$aside.on("click", {
-		delegates: [this.$aside, this.$content]
-	}, that.tandemSlide)
-	//--> UX | respond to software-generated events
-	//------------------------------------|
-
-	//-- ANIMATION METHODS ---------------|
-	function reset(delegate) {
-		Object.assign(delegate.data(), that.initialState["$" + delegate["selector"]])
-		delegate.animate({
-	    	width: delegate.data("width")
-	  	}, 500)
-        that.toggleDataBoolean(delegate, "isShifted")
-	}
-	function resetColor(delegate) {
-		delegate.css("background-color", delegate.data("color"))
-	}
-	function shift(delegate, percent) {
-		if (delegate.data("shouldStartSlide")) {
-			delegate.animate({
-		    	width: delegate.data("width") - percent
-		  	}, 500)
-		} else {
-			delegate.animate({
-		    	width: delegate.data("width") + percent
-		  	}, 500)
-		}
-        that.toggleDataBoolean(delegate, "isShifted")
-	}
-	function openClose(delegate, percent) {
-		delegate.animate({
-	    	width: delegate.data("width") - percent
-	  	}, 500)
 	}
 	//------------------------------------|
 } 
 //-------------------------------------------->>>
 
 var widget = new Widget();
+
+/* jQuery .animate properties
+	backgroundPositionX
+	backgroundPositionY
+	borderWidth
+	borderBottomWidth
+	borderLeftWidth
+	borderRightWidth
+	borderTopWidth
+	borderSpacing
+	margin
+	marginBottom
+	marginLeft
+	marginRight
+	marginTop
+	outlineWidth
+	padding
+	paddingBottom
+	paddingLeft
+	paddingRight
+	paddingTop
+	height
+	width
+	maxHeight
+	maxWidth
+	minHeight
+	minWidth
+	fontSize
+	bottom
+	left
+	right
+	top
+	letterSpacing
+	wordSpacing
+	lineHeight
+	textIndent
+*/
