@@ -22,39 +22,45 @@ var Widget = function () {
 
 	//-- METHODS -------------------------|
 	this.tandemSlide = function (e) { 
-		var pixels = e.data.pixels
-		var delegates = e.data.delegates
-		var attrName = e.data.attrName
+		var extent = e.data.extent;
+		var responders = e.data.responders;
+		var attrName = e.data.attrName;
 		
-		for (var i=0; i < delegates.length; i++) {
-			if ( hasDataAttributeChanged(delegates[i], attrName) ) {
-				reset(delegates[i], attrName)
-			} else {
-				shift(delegates[i], pixels, attrName)
-			} 
+    console.log('RESPONDERS: ', responders);
+		for (var i=0; i < responders.length; i++) {
+      // console.log('RESPONDER: ', responders[i]);
+      // console.log('RESPONDER_ATTR: ', attrName);
+      // console.log('RESPONDER_ATTR: ', responders[i].data(attrName));
+			// if ( hasDataAttributeChanged(responders[i], attrName) ) {
+			// 	reset(responders[i], attrName);
+			// } else {
+			// 	shift(responders[i], pixels, attrName);
+			// } 
+      shift(responders[i], extent, attrName);
 		}
-	}
+	};
+
 	// this.openCurtain = function (e) { 
 	// 	var pixels = e.data.pixels
-	// 	var delegates = e.data.delegates
+	// 	var responders = e.data.responders
 		
-	// 	for (var i=0; i < delegates.length; i++) {
-	// 		if (delegates[i].data("isShifted")) {
-	// 			reset(delegates[i])
+	// 	for (var i=0; i < responders.length; i++) {
+	// 		if (responders[i].data("isShifted")) {
+	// 			reset(responders[i])
 	// 		} else {
-	// 			openClose(delegates[i], pixels)
+	// 			openClose(responders[i], pixels)
 	// 		} 
 	// 	}
 	// }
 	// this.changeColor = function (e) {
 	// 	var color = e.data.color
-	// 	var delegates = e.data.delegates
+	// 	var responders = e.data.responders
 
-	// 	for (var i=0; i < delegates.length; i++) {
-	// 		if (delegates[i].data("hasColorChanged") && that.$aside.data("isShifted")) {
-	// 			resetColor(delegates[i])
+	// 	for (var i=0; i < responders.length; i++) {
+	// 		if (responders[i].data("hasColorChanged") && that.$aside.data("isShifted")) {
+	// 			resetColor(responders[i])
 	// 		} else {
-	// 			delegates[i].css('background-color', color)
+	// 			responders[i].css('background-color', color)
 	// 		}
 	// 	}
 	// }
@@ -62,93 +68,116 @@ var Widget = function () {
 	
 	//-- EVENTS --------------------------|
 	this.shiftElements = function (e) {
-		var delegates = e.data.delegates
-		for (var i=0; i < delegates.length; i++) {
-			delegates[i].trigger("shiftElements")
+		var responders = e.data.responders;
+		for (var i=0; i < responders.length; i++) {
+			responders[i].trigger("shiftElements");
 		}
-	}
+	};
 	//------------------------------------|
 
 	//-- EVENT HANDLERS ------------------|
 	//--> UI | respond to user hardware events
-	var tandem = [this.$aside, this.$content]
-	heraldOn("click", elements=tandem, delegates=tandem, that.shiftElements)
+	var tandem = [this.$aside, this.$content];
+	heraldOn("click", receivers=tandem, responders=tandem, that.shiftElements);
 	
 	//--> UX | respond to software-generated events
-	this.$aside.on("shiftElements", {
-		pixels: 200,
-		attrName: "width",
-		delegates: [this.$aside, this.$content]
-	}, that.tandemSlide)
+  this.respond = function (responders, trigger, response, event_metadata) {
+    event_metadata.responders = responders;
+		for (var i=0; i < responders.length; i++) {
+      responders[i].on(trigger, event_metadata, response);
+		}
+  };
 	//------------------------------------|
 
 	//-- PRIVATE ANIMATORS ---------------|
-	function reset(delegate, attrName) {
-		Object.assign(delegate.data(), that.initialState["$" + delegate["selector"].replace(/[#.]/g, "")])
-		var opts = {}
-		opts[attrName] = delegate.data(attrName)
-		delegate.animate(opts, 500)
-	  	delegate.data(attrName, opts[attrName])
+	function reset(responder, attrName) {
+		Object.assign(responder.data(), that.initialState["$" + responder["selector"].replace(/[#.]/g, "")]);
+		var opts = {};
+		opts[attrName] = responder.data(attrName);
+		responder.animate(opts, 500);
+	 	responder.data(attrName, opts[attrName]);
 	}
-	// function resetColor(delegate) {
-	// 	delegate.css("background-color", delegate.data("color"))
+
+	// function resetColor(responder) {
+	// 	responder.css("background-color", responder.data("color"))
 	// }
-	function shift(delegate, pixels, attrName) {
-		var opts = {}
-		if (delegate.data("shouldAdvance")) {
-			opts[attrName] = delegate.data(attrName) + pixels
-			delegate.animate(opts, 500)
-		  	delegate.data(attrName, opts[attrName])
+
+	function shift(responder, extent, attrName) {
+		var opts = {};
+    console.log('SHOULD_ADVANCE: ', responder.data("shouldAdvance"));
+		if (responder.data("shouldAdvance")) {
+			opts[attrName] = responder.data(attrName) + extent;
+			responder.animate(opts, 500);
+		  	responder.data(attrName, opts[attrName]);
 		} else {
-			opts[attrName] = delegate.data(attrName) - pixels
-			delegate.animate(opts, 500)
-		  	delegate.data(attrName, opts[attrName])
+			opts[attrName] = responder.data(attrName) - extent;
+			responder.animate(opts, 500);
+		  	responder.data(attrName, opts[attrName]);
 		}
-	  	toggleDataBoolean(delegate, "shouldAdvance")
+	  	toggleDataBoolean(responder, "shouldAdvance");
 	}
-	// function openClose(delegate, pixels) {
-	// 	delegate.animate({
-	//     	width: delegate.data("width") - pixels
+
+	// function openClose(responder, pixels) {
+	// 	responder.animate({
+	//     	width: responder.data("width") - pixels
 	//   	}, 500)
 	// }
 	//-- PRIVATE UTILITIES ---------------|
 	function getInitialState() {
-		var props = Object.keys(that)
-		var initData = {}
+		var props = Object.keys(that);
+		var initData = {};
 		for (var i=0; i<props.length; i++) {
 			if (props[i].indexOf("$") !== -1 && typeof that[props[i]] === "object") {
-				initData[props[i]] = that[props[i]].clone(true).data() // deep clone
+				initData[props[i]] = that[props[i]].clone(true).data(); // deep clone
 			}
 		} 
-		return initData
+		return initData;
 	}
-	function heraldOn(eventName, elements, delegates, callback) {
-		for (var i=0; i < elements.length; i++) {
-			elements[i].on(eventName, {
-				delegates: delegates				
-			}, callback)
+
+  /*****
+   * eventName --> user action (i.e. "click")
+   * receivers --> DOM elements to which event handlers are added
+   * responders --> DOM elements to 
+   * callback --> 
+   */
+	function heraldOn(eventName, receivers, responders, callback) {
+		for (var i=0; i < receivers.length; i++) {
+			receivers[i].on(eventName, {
+				responders: responders
+			}, callback);
 		}
 	}
+
 	function toggleDataBoolean(element, attrName) {
 		if (typeof element.data(attrName) === "boolean") {
-			element.data(attrName) ? element.data(attrName, false) : element.data(attrName, true)
-			return true
+			element.data(attrName) ? element.data(attrName, false) : element.data(attrName, true);
+			return true;
 		} else {
-			return false
+			return false;
 		}
 	} 
+
 	function hasDataAttributeChanged(element, attrName) {
 		if (element.data(attrName) === that.initialState["$" + element.selector.replace(/[#.]/g, "")][attrName]) {
-			return false 
+			return false; 
 		} else {
-			return true
+			return true;
 		}
 	}
 	//------------------------------------|
-} 
+};
 //-------------------------------------------->>>
 
 var widget = new Widget();
+
+sliders = [widget.$aside, widget.$content];
+
+tandemSlideMetadata = {
+  extent: 500,
+  attrName: "width"
+};
+
+widget.respond(sliders, "shiftElements", widget.tandemSlide, tandemSlideMetadata);
 
 /* jQuery .animate properties
 	backgroundPositionX
