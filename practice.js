@@ -1,4 +1,13 @@
 //-- CONSTRUCTOR ----------------------------->>>
+var Reaction = function (info, responseName) {
+
+	//-- PROPERTIES ----------------------|
+  this.info = info;
+	this.responseName = responseName;
+};
+//-------------------------------------------->>>
+
+//-- CONSTRUCTOR ----------------------------->>>
 var Widget = function () {
 
 	//-- PROPERTIES ----------------------|
@@ -41,7 +50,7 @@ var Widget = function () {
   /**********
    * signal |
    *---------
-   * triggers an event on `responders` associated with an event
+   * triggers an event on `responders`. Couples user interaction with custom responses.
    *---------
    * e --> jQuery event object
    */
@@ -73,23 +82,23 @@ var Widget = function () {
 		}
 	};
 	
-  /***********
-   * respond |
-   *----------
-   * set event handlers on `responders` to exhibit a `response` when an `signal` dispatched
-   *----------
+  /*************
+   * respondTo |
+   *------------
+   * set event handlers on `responders` to exhibit a `response` when a `signal` is dispatched
+   *------------
    * interaction --> user action (i.e. "click")
-   * receivers --> 
-   * responders --> elements that will change on event
-   * response --> action `responders` take
-   * responseMetaData --> info on the extent, attrName, etc. of `responders` to change
+   * receivers --> elements that engender response on `interaction`
+   * reaction --> object containing info on how and which elements should respond to an interaction event
    * signal --> name of event that triggers response
    */
-  this.respondTo = function (interaction, receivers, responders, response, responseMetadata, signal) {
+  this.respondTo = function (interaction, receivers, reaction, signal) {
+    var responders = reaction.info.responders;
+    var response = this[reaction.responseName];
+
     this.dispatch(interaction, receivers, responders, signal);
-    responseMetadata.responders = responders;
 		for (var i=0; i < responders.length; i++) {
-      responders[i].on(signal, responseMetadata, response);
+      responders[i].on(signal, reaction.info, response);
 		}
   };
 	//------------------------------------|
@@ -116,7 +125,7 @@ var Widget = function () {
   /*********
    * shift |
    *--------
-   * animate a `responder` `attrName` by a given `extent` if it `shouldAdvance`
+   * animate a `responder` attribute by a given `extent` if it `shouldAdvance`
    *--------
    * responder --> element whose data attribute is to be toggled
    * extent --> element whose data attribute is to be toggled
@@ -196,19 +205,20 @@ var widget = new Widget();
 
 sliders = [widget.$aside, widget.$content];
 
-tandemSlideMetadata = {
-  extent: 500,
-  attrName: "width"
-};
-
 widget.respondTo(
   interaction="click", 
   receivers=sliders,
-  responders=sliders,
-  response=widget.tandemSlide,
-  responseMetadata=tandemSlideMetadata,
+  reaction=new Reaction(
+    info={
+      extent: 500,
+      attrName: "width",
+      responders: sliders
+    },
+    responseName="tandemSlide"
+  ),
   signal="shiftElements"
 );
+
 
 /* jQuery .animate properties
 	backgroundPositionX
