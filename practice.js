@@ -1,74 +1,53 @@
 //-- CONSTRUCTOR ----------------------------->>>
 var Widget = function () {
 
-	var that = this;
-
 	//-- PROPERTIES ----------------------|
 	//--> elements can have data attrs that change on event
-	this.$header = $("header")
-	this.$wrapper = $("#wrapper")
-	this.$content = $("#content")
-	this.$footer = $("footer")
-	this.$aside = $("aside")
+	this.$header = $("header");
+	this.$wrapper = $("#wrapper");
+	this.$content = $("#content");
+	this.$footer = $("footer");
+	this.$aside = $("aside");
 	//--> SET DATA ATTRIBUTES 
-	this.$aside.data("width", this.$aside[0].offsetWidth)
-	this.$aside.data("shouldAdvance", true)
-	this.$content.data("width", this.$content[0].offsetWidth)
-	this.$content.data("shouldAdvance", false)
-	// this.$header.data("color", this.$header.css('background-color'))
-	// this.$header.data("hasColorChanged", false)
-	this.initialState = getInitialState()
+	this.$aside.data("width", this.$aside[0].offsetWidth);
+	this.$aside.data("shouldAdvance", true);
+	this.$content.data("width", this.$content[0].offsetWidth);
+	this.$content.data("shouldAdvance", false);
+	this.initialState = getInitialState();
 	//------------------------------------|
 
-	//-- METHODS -------------------------|
+	//-- RESPONSES -----------------------|
+
+  /***************
+   * tandemSlide |
+   *--------------
+   * executes a `shift` animation on `responders`
+   *--------------
+   * e --> jQuery event object
+   */
 	this.tandemSlide = function (e) { 
 		var extent = e.data.extent;
 		var responders = e.data.responders;
 		var attrName = e.data.attrName;
 		
-    console.log('RESPONDERS: ', responders);
 		for (var i=0; i < responders.length; i++) {
-      // console.log('RESPONDER: ', responders[i]);
-      // console.log('RESPONDER_ATTR: ', attrName);
-      // console.log('RESPONDER_ATTR: ', responders[i].data(attrName));
-			// if ( hasDataAttributeChanged(responders[i], attrName) ) {
-			// 	reset(responders[i], attrName);
-			// } else {
-			// 	shift(responders[i], pixels, attrName);
-			// } 
       shift(responders[i], extent, attrName);
 		}
 	};
-
-	// this.openCurtain = function (e) { 
-	// 	var pixels = e.data.pixels
-	// 	var responders = e.data.responders
-		
-	// 	for (var i=0; i < responders.length; i++) {
-	// 		if (responders[i].data("isShifted")) {
-	// 			reset(responders[i])
-	// 		} else {
-	// 			openClose(responders[i], pixels)
-	// 		} 
-	// 	}
-	// }
-	// this.changeColor = function (e) {
-	// 	var color = e.data.color
-	// 	var responders = e.data.responders
-
-	// 	for (var i=0; i < responders.length; i++) {
-	// 		if (responders[i].data("hasColorChanged") && that.$aside.data("isShifted")) {
-	// 			resetColor(responders[i])
-	// 		} else {
-	// 			responders[i].css('background-color', color)
-	// 		}
-	// 	}
-	// }
 	//------------------------------------|
 	
 	//-- EVENTS --------------------------|
+
+  /*****************
+   * shiftElements |
+   *----------------
+   * triggers a `shiftElements` event on `responders`
+   *----------------
+   * e --> jQuery event object
+   */
 	this.shiftElements = function (e) {
 		var responders = e.data.responders;
+
 		for (var i=0; i < responders.length; i++) {
 			responders[i].trigger("shiftElements");
 		}
@@ -76,78 +55,116 @@ var Widget = function () {
 	//------------------------------------|
 
 	//-- EVENT HANDLERS ------------------|
-	//--> UI | respond to user hardware events
-	var tandem = [this.$aside, this.$content];
-	heraldOn("click", receivers=tandem, responders=tandem, that.shiftElements);
+
+  /************
+   * dispatch |
+   *-----------
+   * sets a custom event to be triggered for "responder" elements on user interaction
+   *-----------
+   * interaction --> user action (i.e. "click")
+   * receivers --> DOM elements to which event handlers are added
+   * responders --> DOM elements this will 'hear' the 'herald' event
+   * herald --> custom event
+   */
+	this.dispatch = function (interaction, receivers, responders, herald) {
+		for (var i=0; i < receivers.length; i++) {
+			receivers[i].on(interaction, {
+				responders: responders
+			}, this[herald]);
+		}
+	};
 	
-	//--> UX | respond to software-generated events
-  this.respond = function (responders, trigger, response, event_metadata) {
-    event_metadata.responders = responders;
+  /***********
+   * respond |
+   *----------
+   * set event handlers on `responders` to exhibit a `response` when an `event` dispatched
+   *----------
+   * interaction --> user action (i.e. "click")
+   * receivers --> 
+   * responders --> elements that will change on event
+   * response --> action `responders` take
+   * responseMetaData --> info on the extent, attrName, etc. of `responders` to change
+   * event --> name of event that triggers response
+   */
+  this.respondTo = function (interaction, receivers, responders, response, responseMetadata, event) {
+    this.dispatch(interaction, receivers, responders, event);
+    responseMetadata.responders = responders;
 		for (var i=0; i < responders.length; i++) {
-      responders[i].on(trigger, event_metadata, response);
+      responders[i].on(event, responseMetadata, response);
 		}
   };
 	//------------------------------------|
 
 	//-- PRIVATE ANIMATORS ---------------|
-	function reset(responder, attrName) {
-		Object.assign(responder.data(), that.initialState["$" + responder["selector"].replace(/[#.]/g, "")]);
+
+  /*********
+   * reset |
+   *--------
+   * animate `responder` to initial state
+   *--------
+   * responder --> element whose data attribute is to be reset
+   * attrName --> name of data attribute to be reset
+   */
+	function reset(responder, extent, attrName) {
+    console.log('RESET: ', this.initialState);
+		Object.assign(responder.data(), this.initialState["$" + responder["selector"].replace(/[#.]/g, "")]);
 		var opts = {};
 		opts[attrName] = responder.data(attrName);
-		responder.animate(opts, 500);
+		responder.animate(opts, extent);
 	 	responder.data(attrName, opts[attrName]);
 	}
 
-	// function resetColor(responder) {
-	// 	responder.css("background-color", responder.data("color"))
-	// }
-
+  /*********
+   * shift |
+   *--------
+   * animate a `responder` `attrName` by a given `extent` if it `shouldAdvance`
+   *--------
+   * responder --> element whose data attribute is to be toggled
+   * extent --> element whose data attribute is to be toggled
+   * attrName --> name of data attribute to be toggled
+   */
 	function shift(responder, extent, attrName) {
 		var opts = {};
-    console.log('SHOULD_ADVANCE: ', responder.data("shouldAdvance"));
 		if (responder.data("shouldAdvance")) {
 			opts[attrName] = responder.data(attrName) + extent;
-			responder.animate(opts, 500);
+			responder.animate(opts, extent);
 		  	responder.data(attrName, opts[attrName]);
 		} else {
 			opts[attrName] = responder.data(attrName) - extent;
-			responder.animate(opts, 500);
+			responder.animate(opts, extent);
 		  	responder.data(attrName, opts[attrName]);
 		}
 	  	toggleDataBoolean(responder, "shouldAdvance");
 	}
+	//------------------------------------|
 
-	// function openClose(responder, pixels) {
-	// 	responder.animate({
-	//     	width: responder.data("width") - pixels
-	//   	}, 500)
-	// }
 	//-- PRIVATE UTILITIES ---------------|
+
+  /*******************
+   * getInitialState |
+   *------------------
+   * return the original data attributes
+   *------------------
+   */
 	function getInitialState() {
-		var props = Object.keys(that);
+		var props = Object.keys(this);
 		var initData = {};
 		for (var i=0; i<props.length; i++) {
-			if (props[i].indexOf("$") !== -1 && typeof that[props[i]] === "object") {
-				initData[props[i]] = that[props[i]].clone(true).data(); // deep clone
+			if (props[i].indexOf("$") !== -1 && typeof this[props[i]] === "object") {
+				initData[props[i]] = this[props[i]].clone(true).data();  // deep clone
 			}
 		} 
 		return initData;
 	}
 
-  /*****
-   * eventName --> user action (i.e. "click")
-   * receivers --> DOM elements to which event handlers are added
-   * responders --> DOM elements to 
-   * callback --> 
+  /*********************
+   * toggleDataBoolean |
+   *--------------------
+   * sets a custom event to be triggered for "responder" elements on user interaction
+   *--------------------
+   * element --> element whose data attribute is to be toggled
+   * attrName --> name of data attribute to be toggled
    */
-	function heraldOn(eventName, receivers, responders, callback) {
-		for (var i=0; i < receivers.length; i++) {
-			receivers[i].on(eventName, {
-				responders: responders
-			}, callback);
-		}
-	}
-
 	function toggleDataBoolean(element, attrName) {
 		if (typeof element.data(attrName) === "boolean") {
 			element.data(attrName) ? element.data(attrName, false) : element.data(attrName, true);
@@ -157,8 +174,16 @@ var Widget = function () {
 		}
 	} 
 
+  /***************************
+   * hasDataAttributeChanged |
+   *--------------------------
+   * determines if element data attribute is different from initial value
+   *--------------------------
+   * element --> element whose data attribute is to be toggled
+   * attrName --> name of data attribute to be toggled
+   */
 	function hasDataAttributeChanged(element, attrName) {
-		if (element.data(attrName) === that.initialState["$" + element.selector.replace(/[#.]/g, "")][attrName]) {
+		if (element.data(attrName) === this.initialState["$" + element.selector.replace(/[#.]/g, "")][attrName]) {
 			return false; 
 		} else {
 			return true;
@@ -177,7 +202,14 @@ tandemSlideMetadata = {
   attrName: "width"
 };
 
-widget.respond(sliders, "shiftElements", widget.tandemSlide, tandemSlideMetadata);
+widget.respondTo(
+  interaction="click", 
+  receivers=sliders,
+  responders=sliders,
+  response=widget.tandemSlide,
+  responseMetadata=tandemSlideMetadata,
+  event="shiftElements"
+);
 
 /* jQuery .animate properties
 	backgroundPositionX
