@@ -35,26 +35,24 @@ var Widget = function () {
 		}
 	};
 	//------------------------------------|
-	
-	//-- EVENTS --------------------------|
 
-  /*****************
-   * shiftElements |
-   *----------------
-   * triggers a `shiftElements` event on `responders`
-   *----------------
+	//-- EVENT HANDLING ------------------|
+
+  /**********
+   * signal |
+   *---------
+   * triggers an event on `responders` associated with an event
+   *---------
    * e --> jQuery event object
    */
-	this.shiftElements = function (e) {
+	this.signal = function (e) {
 		var responders = e.data.responders;
+		var signal = e.data.signalName;
 
 		for (var i=0; i < responders.length; i++) {
-			responders[i].trigger("shiftElements");
+			responders[i].trigger(signal);
 		}
 	};
-	//------------------------------------|
-
-	//-- EVENT HANDLERS ------------------|
 
   /************
    * dispatch |
@@ -66,31 +64,32 @@ var Widget = function () {
    * responders --> DOM elements this will 'hear' the 'herald' event
    * herald --> custom event
    */
-	this.dispatch = function (interaction, receivers, responders, herald) {
+	this.dispatch = function (interaction, receivers, responders, signal) {
 		for (var i=0; i < receivers.length; i++) {
 			receivers[i].on(interaction, {
-				responders: responders
-			}, this[herald]);
+				responders: responders,
+				signalName: signal
+			}, this.signal);
 		}
 	};
 	
   /***********
    * respond |
    *----------
-   * set event handlers on `responders` to exhibit a `response` when an `event` dispatched
+   * set event handlers on `responders` to exhibit a `response` when an `signal` dispatched
    *----------
    * interaction --> user action (i.e. "click")
    * receivers --> 
    * responders --> elements that will change on event
    * response --> action `responders` take
    * responseMetaData --> info on the extent, attrName, etc. of `responders` to change
-   * event --> name of event that triggers response
+   * signal --> name of event that triggers response
    */
-  this.respondTo = function (interaction, receivers, responders, response, responseMetadata, event) {
-    this.dispatch(interaction, receivers, responders, event);
+  this.respondTo = function (interaction, receivers, responders, response, responseMetadata, signal) {
+    this.dispatch(interaction, receivers, responders, signal);
     responseMetadata.responders = responders;
 		for (var i=0; i < responders.length; i++) {
-      responders[i].on(event, responseMetadata, response);
+      responders[i].on(signal, responseMetadata, response);
 		}
   };
 	//------------------------------------|
@@ -208,7 +207,7 @@ widget.respondTo(
   responders=sliders,
   response=widget.tandemSlide,
   responseMetadata=tandemSlideMetadata,
-  event="shiftElements"
+  signal="shiftElements"
 );
 
 /* jQuery .animate properties
